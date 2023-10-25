@@ -22,6 +22,16 @@ const MainRoutes = {
             component: () => import('@/views/pages/contas/Adicionar.vue')
         },
         {
+            name: 'contas-pagar-editar', 
+            path: '/contas/pagar/editar/:id', 
+            component: () => import('@/views/pages/contas/Editar.vue') 
+        },
+        {
+            name: 'contas-pagar-excluir', 
+            path: '/contas/pagar/excluir/:id', 
+            component: () => import('@/views/pages/contas/Excluir.vue') 
+        },
+        {
             name: 'Buttons',
             path: '/ui/buttons',
             component: () => import('@/views/ui-components/Buttons.vue')

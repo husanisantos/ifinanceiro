@@ -2,7 +2,7 @@
 
   <v-row>
         <v-col cols="12" md="12">
-            <UiParentCard title="Adicionar conta a pagar"> 
+            <UiParentCard title="Editar conta a pagar"> 
               <form @submit.prevent="submitForm">
                 <v-row>
 
@@ -37,7 +37,7 @@
                   </v-col>
 
                   <v-col cols="12">
-                        <v-btn type="submit" size="large" rounded="pill" color="primary" class="rounded-pill" block flat>Adicionar</v-btn>
+                        <v-btn type="submit" size="large" rounded="pill" color="primary" class="rounded-pill" block flat>Atualizar</v-btn>
                   </v-col>
 
                 </v-row>
@@ -55,33 +55,62 @@
   </script>
 
   <script>
+
   const endpoint = import.meta.env.VITE_ENDPOIN;
   export default {
     data() {
-      return {
-        formulario: {
-          titulo: '',
-          descricao: '',
-          emissao: '',
-          vencimento: '',
-          pagamento: '',
-          valor: ''
-        }
-      };
+    return {
+      formulario: {
+        titulo: '',
+        descricao: '',
+        emissao: '',
+        vencimento: '',
+        pagamento: '',
+        valor: ''
+      }
+    };
+  },
+  mounted() {
+    const id = this.$route.params.id;
+    const token = JSON.parse(localStorage.getItem("token"));
+    const apiUrl = `${import.meta.env.VITE_ENDPOIN}/contas/pagar/${id}`;
+
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token.access_token}`,
+        },
+      })
+      .then((response) => {
+        // Preencha o formulário com os dados da resposta da API
+        const data = response.data;
+
+        this.formulario.titulo = data.titulo;
+        this.formulario.descricao = data.descricao;
+        this.formulario.emissao = this.formatDate(data.emissao);
+        this.formulario.vencimento = this.formatDate(data.vencimento);
+        this.formulario.pagamento = this.formatDate(data.pagamento);
+        this.formulario.valor = data.valor;
+      })
+      .catch((error) => {
+        console.error('Erro na requisição:', error);
+      });
     },
     methods: {
       async submitForm() {
-        const url = `${endpoint}/contas/pagar`;
-        const token = JSON.parse(localStorage.getItem('token')); 
 
+        const id = this.$route.params.id;
+        const url = `${endpoint}/contas/pagar/${id}`;
+        const token = JSON.parse(localStorage.getItem('token')); 
         const formData = {};
-        
+
         for (const key in this.formulario) {
           if (this.formulario[key]) {
             formData[key] = this.formulario[key];
           }
         }
-
+        
+ 
         try {
           const response = await axios.post(url, formData, {
             headers: {
@@ -99,12 +128,22 @@
           console.error('Erro na solicitação:', error);
         }
       },
+
       formatarValor() {
         // Formatar o valor monetário (exemplo simples)
         this.formulario.valor = this.formulario.valor
           .replace(/\D/g, '') // Remove todos os caracteres não numéricos
           .replace(/(\d)(\d{2})$/, '$1.$2'); // Adiciona a vírgula como separador de decimais
-      }
+      },
+
+      formatDate(date) {
+        const formattedDate = new Date(date);
+        const year = formattedDate.getFullYear();
+        const month = (formattedDate.getMonth() + 1).toString().padStart(2, '0');
+        const day = formattedDate.getDate().toString().padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+      },
     }
   };
   </script>
